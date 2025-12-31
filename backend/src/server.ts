@@ -14,11 +14,17 @@ async function start() {
     // prune expired refresh tokens on boot
     await pruneExpiredTokens();
 
-    // schedule periodic cleanup (hourly) in non-test env
+    // schedule periodic cleanup
     if (env.NODE_ENV !== 'test') {
       setInterval(() => {
-        void pruneExpiredTokens().catch((err) => console.error('Failed to prune tokens', err));
-      }, 60 * 60 * 1000);
+        const start = Date.now();
+        void pruneExpiredTokens()
+          .then((count) => {
+            const duration = Date.now() - start;
+            console.log(`Token cleanup removed ${count} expired tokens in ${duration}ms`);
+          })
+          .catch((err) => console.error('Failed to prune tokens', err));
+      }, env.CLEANUP_INTERVAL_MS);
     }
 
     app.listen(PORT, () => {

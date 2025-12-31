@@ -141,4 +141,12 @@ router.post('/logout-all', authGuard, async (req, res, next) => {
   return res.status(204).send();
 });
 
+router.get('/sessions', authGuard, async (req, res, next) => {
+  if (!req.user) return next(unauthorized());
+  const sessions = await RefreshToken.find({ user: req.user.id })
+    .select(['tokenId', 'expiresAt', 'revokedAt'])
+    .lean();
+  return res.json({ sessions });
+});
+
 export default router;

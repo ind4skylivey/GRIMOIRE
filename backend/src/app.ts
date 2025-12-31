@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import authRouter from './routes/auth';
+import v1Router from './routes/v1';
 import { errorHandler } from './middleware/errorHandler';
 import { HttpError } from './utils/errors';
 
@@ -14,7 +14,7 @@ app.get('/', (_req, res) => {
   res.send('GRIMOIRE Backend is running!');
 });
 
-app.use('/api/auth', authRouter);
+app.use('/api/v1', v1Router);
 
 app.use((_req, _res, next) => next(new HttpError(404, 'Not Found')));
 

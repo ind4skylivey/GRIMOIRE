@@ -11,6 +11,7 @@ const envSchema = z.object({
   ACCESS_TOKEN_TTL: z.string().default('15m'),
   REFRESH_TOKEN_TTL: z.string().default('7d'),
   BCRYPT_SALT_ROUNDS: z.coerce.number().int().min(10).default(12),
+  CLEANUP_INTERVAL_MS: z.coerce.number().int().positive().default(60 * 60 * 1000),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 });
 

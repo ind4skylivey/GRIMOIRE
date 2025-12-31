@@ -50,5 +50,6 @@ export async function isRefreshTokenActive(tokenId: string) {
 }
 
 export async function pruneExpiredTokens() {
-  await RefreshToken.deleteMany({ expiresAt: { $lt: new Date() } });
+  const result = await RefreshToken.deleteMany({ expiresAt: { $lt: new Date() } });
+  return result.deletedCount ?? 0;
 }

@@ -34,7 +34,7 @@ describe('Auth routes', () => {
 
   it('registers a user and returns tokens', async () => {
     const res = await request(app)
-      .post('/api/auth/register')
+      .post('/api/v1/auth/register')
       .send({ email, password })
       .expect(201);
 
@@ -50,9 +50,9 @@ describe('Auth routes', () => {
   });
 
   it('logs in an existing user', async () => {
-    await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    await request(app).post('/api/v1/auth/register').send({ email, password }).expect(201);
 
-    const res = await request(app).post('/api/auth/login').send({ email, password }).expect(200);
+    const res = await request(app).post('/api/v1/auth/login').send({ email, password }).expect(200);
 
     expect(res.body.accessToken).toBeDefined();
     expect(res.body.refreshToken).toBeDefined();
@@ -62,17 +62,17 @@ describe('Auth routes', () => {
   });
 
   it('rejects invalid credentials', async () => {
-    await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    await request(app).post('/api/v1/auth/register').send({ email, password }).expect(201);
 
-    await request(app).post('/api/auth/login').send({ email, password: 'wrongpassword' }).expect(401);
+    await request(app).post('/api/v1/auth/login').send({ email, password: 'wrongpassword' }).expect(401);
   });
 
   it('returns current user on /me when authorized', async () => {
-    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const register = await request(app).post('/api/v1/auth/register').send({ email, password }).expect(201);
     const accessToken = register.body.accessToken as string;
 
     const res = await request(app)
-      .get('/api/auth/me')
+      .get('/api/v1/auth/me')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
@@ -80,10 +80,10 @@ describe('Auth routes', () => {
   });
 
   it('refreshes tokens', async () => {
-    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const register = await request(app).post('/api/v1/auth/register').send({ email, password }).expect(201);
 
     const refreshToken = register.body.refreshToken;
-    const res = await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(200);
+    const res = await request(app).post('/api/v1/auth/refresh').send({ refreshToken }).expect(200);
 
     expect(res.body.accessToken).toBeDefined();
     expect(res.body.refreshToken).toBeDefined();
@@ -97,7 +97,7 @@ describe('Auth routes', () => {
   });
 
   it('rejects refresh with revoked token', async () => {
-    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const register = await request(app).post('/api/v1/auth/register').send({ email, password }).expect(201);
     const refreshToken = register.body.refreshToken;
     const jti = decodeJti(refreshToken);
     expect(jti).toBeDefined();
@@ -105,41 +105,41 @@ describe('Auth routes', () => {
       await RefreshToken.findOneAndUpdate({ tokenId: jti }, { revokedAt: new Date() });
     }
 
-    await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(401);
+    await request(app).post('/api/v1/auth/refresh').send({ refreshToken }).expect(401);
   });
 
   it('logs out and revokes refresh token', async () => {
-    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const register = await request(app).post('/api/v1/auth/register').send({ email, password }).expect(201);
     const refreshToken = register.body.refreshToken;
     const jti = decodeJti(refreshToken);
 
-    await request(app).post('/api/auth/logout').send({ refreshToken }).expect(204);
+    await request(app).post('/api/v1/auth/logout').send({ refreshToken }).expect(204);
 
     const stored = await RefreshToken.findOne({ tokenId: jti });
     expect(stored?.revokedAt).not.toBeNull();
 
-    await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(401);
+    await request(app).post('/api/v1/auth/refresh').send({ refreshToken }).expect(401);
   });
 
   it('logout-all revokes all tokens', async () => {
-    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const register = await request(app).post('/api/v1/auth/register').send({ email, password }).expect(201);
     const refreshToken = register.body.refreshToken as string;
     const accessToken = register.body.accessToken as string;
 
     // issue second token via refresh
-    const refreshed = await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(200);
+    const refreshed = await request(app).post('/api/v1/auth/refresh').send({ refreshToken }).expect(200);
 
     await request(app)
-      .post('/api/auth/logout-all')
+      .post('/api/v1/auth/logout-all')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(204);
 
-    await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(401);
-    await request(app).post('/api/auth/refresh').send({ refreshToken: refreshed.body.refreshToken }).expect(401);
+    await request(app).post('/api/v1/auth/refresh').send({ refreshToken }).expect(401);
+    await request(app).post('/api/v1/auth/refresh').send({ refreshToken: refreshed.body.refreshToken }).expect(401);
   });
 
   it('prunes expired tokens', async () => {
-    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const register = await request(app).post('/api/v1/auth/register').send({ email, password }).expect(201);
     const jti = decodeJti(register.body.refreshToken);
     expect(jti).toBeDefined();
 

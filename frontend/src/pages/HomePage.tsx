@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../useAuth';
 import { fetchMe } from '../api/client';
+import SessionList from '../components/SessionList';
 
 const HomePage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -29,6 +30,7 @@ const HomePage: React.FC = () => {
         <button onClick={handleMe}>Check /api/auth/me</button>
         {status && <p style={{ marginTop: '0.5rem' }}>{status}</p>}
       </div>
+      <SessionList />
     </div>
   );
 };
