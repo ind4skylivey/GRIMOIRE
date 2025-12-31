@@ -1,0 +1,6 @@
+# Example client configuration (sanitized). Duplicate and fill locally.
+name = "example"
+environment = "staging"
+api_base_url = "https://api.example.test"
+contact = "security@example.com"
+notes = "Replace values locally; do not commit real data."
