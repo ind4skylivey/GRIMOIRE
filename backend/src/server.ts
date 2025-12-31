@@ -1,29 +1,33 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import app from './app';
 
-// Load environment variables
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/grimoire';
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
+async function start() {
+  try {
+    if (process.env.NODE_ENV !== 'test') {
+      await mongoose.connect(MONGODB_URI);
+      console.log('Connected to MongoDB');
+    }
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/grimoire')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+    if (process.env.NODE_ENV !== 'test') {
+      app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+      });
+    }
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+}
 
-// Routes (example)
-app.get('/', (req, res) => {
-  res.send('GRIMOIRE Backend is running!');
-});
+// Start server only when not under test harness
+if (process.env.NODE_ENV !== 'test') {
+  void start();
+}
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+export default app;

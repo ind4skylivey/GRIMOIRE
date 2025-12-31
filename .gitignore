@@ -99,6 +99,7 @@ env/
 dist/
 build/
 .npm/
+.npm-cache/
 *.tsbuildinfo
 
 ############################
