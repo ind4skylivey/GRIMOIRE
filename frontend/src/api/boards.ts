@@ -63,7 +63,7 @@ export async function updateCard(
   boardId: string,
   listId: string,
   cardId: string,
-  data: Partial<Pick<Card, 'title' | 'description' | 'status' | 'position'>>
+  data: Partial<Pick<Card, 'title' | 'description' | 'status' | 'position' | 'list'>>
 ): Promise<Card> {
   const res = await client.patch<{ card: Card }>(
     `/api/v1/boards/${boardId}/lists/${listId}/cards/${cardId}`,

@@ -30,7 +30,11 @@ const cardSchema = z.object({
   position: z.number().optional(),
 });
 
-const cardUpdateSchema = cardSchema.partial();
+const cardUpdateSchema = cardSchema
+  .extend({
+    list: z.string().optional(),
+  })
+  .partial();
 
 router.use(authGuard);
 
@@ -144,12 +148,21 @@ router.patch('/:boardId/lists/:listId/cards/:cardId', validateBody(cardUpdateSch
   if (!req.user) return next(unauthorized());
   const board = await Board.findOne({ _id: req.params.boardId, owner: req.user.id });
   if (!board) return next(notFound('Board not found'));
-  const list = await List.findOne({ _id: req.params.listId, board: board.id });
-  if (!list) return next(notFound('List not found'));
+
+  let targetList = await List.findOne({ _id: req.params.listId, board: board.id });
+  if (!targetList) return next(notFound('List not found'));
+
+  if (req.body.list) {
+    const newList = await List.findOne({ _id: req.body.list, board: board.id });
+    if (!newList) return next(notFound('Target list not found'));
+    targetList = newList;
+  }
+
+  const updatePayload = { ...req.body, list: req.body.list ?? targetList.id };
 
   const card = await Card.findOneAndUpdate(
-    { _id: req.params.cardId, board: board.id, list: list.id },
-    req.body,
+    { _id: req.params.cardId, board: board.id },
+    updatePayload,
     { new: true }
   ).lean();
   if (!card) return next(notFound('Card not found'));
