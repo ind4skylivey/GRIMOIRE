@@ -1,54 +1,56 @@
-# GRIMOIRE 🧙‍♂️
+<div align="center">
+  <img src="./assets/grimoire-banner.png" alt="GRIMOIRE Banner" width="100%">
+  
+  # 🔮 GRIMOIRE
+  
+  **Enchant your workflow. Illuminate the path to done.**
+  
+  A mystical Kanban task management app where productivity meets magic ✨
+  
+  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+  [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+  
+  [✨ Features](#-features) • [🚀 Quick Start](#-quick-start) • [📖 Documentation](#-magic-terminology) • [🎮 Roadmap](#-roadmap)
+</div>
 
-Enchant your workflow with a secure, Kanban-inspired task manager built for disciplined teams.
+---
 
-![Stack](https://img.shields.io/badge/Stack-React%20%7C%20Node%20%7C%20Mongo-orange)
-![API](https://img.shields.io/badge/API-v1-blueviolet)
-![Auth](https://img.shields.io/badge/Auth-JWT-blue)
-![Tests](https://img.shields.io/badge/Backend%20Tests-Jest%20%2B%20Supertest-green)
-![Runtime](https://img.shields.io/badge/Node-18%2B-6aa84f)
-![Database](https://img.shields.io/badge/DB-MongoDB-4caf50)
-![License](https://img.shields.io/badge/License-MIT-black)
+## ✨ Features
 
-## Table of Contents
-1. [Architecture](#architecture)
-2. [Quick Start](#quick-start)
-3. [Environment](#environment)
-4. [Development Scripts](#development-scripts)
-5. [API Map (v1)](#api-map-v1)
-6. [Security Defaults](#security-defaults)
-7. [Testing](#testing)
-8. [Deployment Notes](#deployment-notes)
+🔮 **Mystical Interface** - Dark-first theme with magical accents and (future) particle effects  
+🎮 **Gamification** - XP/achievements/levels (roadmap)  
+🎯 **Drag & Drop Magic** - Smooth Kanban board with spell casting vibes (roadmap)  
+🌙 **Dark Mode First** - Illuminated light mode planned  
+🎵 **Sound Design** - Magical SFX planned for actions  
+⌨️ **Power User Shortcuts** - Command palette + vim-style nav (roadmap)  
+📱 **PWA Ready** - Install as native app (roadmap)  
+🌐 **Multilingual** - EN/ES planned; terminology mapped below  
 
-## Architecture
-- **Frontend:** React + TypeScript (CRA), axios client with 401 refresh + retry
-- **Backend:** Node.js (Express) + MongoDB, JWT access/refresh with rotation and revocation store
-- **Auth UI:** Protected routes, session list, logout-all
-- **Kanban Data:** Boards and Cards under `/api/v1/boards`
+---
 
-## Quick Start
+## 🎨 Screenshots
+
+<div align="center">
+  <img src="./assets/screenshot-dashboard.png" width="48%" alt="Dashboard preview">
+  <img src="./assets/screenshot-board.png" width="48%" alt="Board preview">
+</div>
+
+---
+
+## 🚀 Quick Start
+
 ### Prerequisites
 - Node.js 18+
-- MongoDB instance (local or remote)
-
-### Environment
-Create `backend/.env` (git-ignored):
-```
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/grimoire
-JWT_SECRET=change-me
-JWT_REFRESH_SECRET=change-me-too
-ACCESS_TOKEN_TTL=15m
-REFRESH_TOKEN_TTL=7d
-BCRYPT_SALT_ROUNDS=12
-CLEANUP_INTERVAL_MS=3600000  # token prune interval (1h default)
-```
-Optional frontend: `REACT_APP_API_URL` (defaults to `http://localhost:5000`).
+- MongoDB
+- npm or yarn
 
 ### Backend
 ```bash
 cd backend
 npm install
+# create backend/.env (see env block)
 npm run dev          # ts-node + nodemon
 # npm run build && npm start   # production
 ```
@@ -59,34 +61,91 @@ cd frontend
 npm install
 npm start
 ```
+Optional: `REACT_APP_API_URL` (defaults to `http://localhost:5000`).
 
-### Run Together
-- Start MongoDB, then backend, then frontend.
-- Frontend expects API at `http://localhost:5000` (or your `REACT_APP_API_URL`).
+### Environment (backend/.env)
+```
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/grimoire
+JWT_SECRET=change-me
+JWT_REFRESH_SECRET=change-me-too
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=7d
+BCRYPT_SALT_ROUNDS=12
+CLEANUP_INTERVAL_MS=3600000
+```
 
-## Development Scripts
-- Backend: `npm run dev` (watch), `npm test -- --runInBand`, `npm run build`
-- Frontend: `npm start`, `npm run build`
+Visit `http://localhost:3000` and start casting spells! 🔮
 
-## API Map (v1)
-- **Auth:** `POST /api/v1/auth/register | login | refresh | logout | logout-all`, `GET /api/v1/auth/me`, `GET /api/v1/auth/sessions`
-- **Boards:** `GET/POST /api/v1/boards`, `GET/PATCH/DELETE /api/v1/boards/:boardId`
-- **Cards:** `GET/POST /api/v1/boards/:boardId/cards`, `PATCH/DELETE /api/v1/boards/:boardId/cards/:cardId`
-- **Ops:** `GET /api/v1/metrics` (uptime, memory, token stats; auth required)
+---
 
-## Security Defaults
-- Default-deny `.gitignore`; `docs/` excluded from VCS.
-- Secrets live in `.env`; never commit them. Rotate `JWT_SECRET`/`JWT_REFRESH_SECRET` regularly.
-- Refresh tokens stored and revocable; cleanup runs every `CLEANUP_INTERVAL_MS`.
-- Validation on all auth/board/card payloads (zod); consistent JSON errors via `HttpError` middleware.
-- Mongo users should run least privilege per environment.
+## 🛠️ Tech Stack
 
-## Testing
-- Backend: `cd backend && npm test -- --runInBand` (Jest + supertest + mongodb-memory-server)
-- Frontend: CRA defaults (`npm test`) — expand as UI grows.
+**Frontend:** React 18 + TypeScript, axios, (upcoming) TailwindCSS, react-beautiful-dnd (to be migrated), Framer Motion (planned)  
+**State:** Context + local state now; roadmap: Zustand  
+**Backend:** Node.js + Express, MongoDB, JWT auth (access + refresh with rotation/revocation)  
+**DevOps:** GitHub Actions (planned), Docker Compose (planned), Vercel/Render (planned)
 
-## Deployment Notes
-- Build frontend: `npm run build` and serve via static host/CDN.
-- Backend: `npm run build && npm start` behind HTTPS + process manager (PM2/systemd).
-- Set CORS allowlist for your deployed frontend origin.
-- Tune `CLEANUP_INTERVAL_MS` and monitor `/api/v1/metrics` for token/store health.
+---
+
+## 📖 Magic Terminology
+
+| Traditional | GRIMOIRE |
+|------------|----------|
+| Boards | 🔮 **Grimoire Pages** |
+| Lists | 📚 **Spell Schools** |
+| Tasks | ✨ **Spells** |
+| Complete | 🎯 **Mastered** |
+| Archive | 🔒 **Sealed in the Vault** |
+| Due Date | 📅 **Prophecy Date** |
+| Recurring | 🔄 **Ritual** |
+
+---
+
+## 🎮 Roadmap
+
+### Q1 2026 - MVP
+- [x] Authentication (JWT, refresh rotation, logout-all)
+- [x] CRUD: Boards + Lists + Cards
+- [ ] Drag & Drop with animations
+- [ ] XP system & achievements
+- [ ] Sound design
+- [ ] PWA setup
+- [ ] Deployment (Vercel/Render)
+
+### Q2 2026 - Enhancement
+- [ ] Real-time collaboration (WebSockets)
+- [ ] Advanced filters & search
+- [ ] Mobile app (React Native)
+- [ ] Third-party integrations
+- [ ] Analytics dashboard
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! (No bots; English only.)
+
+1. Fork the project  
+2. Create your feature branch (`git checkout -b feature/AmazingSpell`)  
+3. Commit (`git commit -m '✨ Add AmazingSpell'`)  
+4. Push (`git push origin feature/AmazingSpell`)  
+5. Open a Pull Request  
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+<div align="center">
+  
+  ### 🔮 Ready to enchant your workflow?
+  
+  ⭐ Star this repo if you believe in productivity magic! ⭐
+  
+  Made with 💜 by wizards, for wizards
+  
+</div>
