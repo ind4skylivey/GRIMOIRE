@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const ACCESS_TOKEN_KEY = 'grimoire_access_token';
@@ -27,6 +27,9 @@ export const client = axios.create({
   baseURL: API_BASE,
 });
 
+let isRefreshing = false;
+let pendingQueue: { resolve: (token?: string) => void; reject: (err: unknown) => void; config: AxiosRequestConfig }[] = [];
+
 client.interceptors.request.use((config) => {
   const token = getAccessToken();
   if (token) {
@@ -35,6 +38,40 @@ client.interceptors.request.use((config) => {
   }
   return config;
 });
+
+client.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && originalRequest && !(originalRequest as any)._retry && getRefreshToken()) {
+      (originalRequest as any)._retry = true;
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          pendingQueue.push({ resolve, reject, config: originalRequest });
+        });
+      }
+
+      isRefreshing = true;
+      try {
+        const data = await refresh();
+        pendingQueue.forEach(({ resolve }) => resolve(data.accessToken));
+        pendingQueue = [];
+        return client(originalRequest);
+      } catch (refreshErr) {
+        pendingQueue.forEach(({ reject }) => reject(refreshErr));
+        pendingQueue = [];
+        await logout();
+        return Promise.reject(refreshErr);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export async function login(email: string, password: string) {
   const res = await client.post<LoginResponse>('/api/auth/login', { email, password });

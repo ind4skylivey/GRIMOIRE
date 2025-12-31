@@ -10,9 +10,11 @@ import {
   persistRefreshToken,
   revokeRefreshToken,
   rotateRefreshToken,
+  revokeAllUserTokens,
 } from '../services/tokenService';
 import { RefreshToken } from '../models/RefreshToken';
 import { authGuard } from '../middleware/auth';
+import { badRequest, conflict, unauthorized } from '../utils/errors';
 
 const router = Router();
 
@@ -25,12 +27,12 @@ const refreshSchema = z.object({
   refreshToken: z.string().min(10),
 });
 
-router.post('/register', validateBody(credentialsSchema), async (req, res) => {
+router.post('/register', validateBody(credentialsSchema), async (req, res, next) => {
   const { email, password } = req.body as z.infer<typeof credentialsSchema>;
 
   const existing = await User.findOne({ email: email.toLowerCase().trim() });
   if (existing) {
-    return res.status(409).json({ error: 'User already exists' });
+    return next(conflict('User already exists'));
   }
 
   const passwordHash = await bcrypt.hash(password, env.BCRYPT_SALT_ROUNDS);
@@ -47,17 +49,17 @@ router.post('/register', validateBody(credentialsSchema), async (req, res) => {
   });
 });
 
-router.post('/login', validateBody(credentialsSchema), async (req, res) => {
+router.post('/login', validateBody(credentialsSchema), async (req, res, next) => {
   const { email, password } = req.body as z.infer<typeof credentialsSchema>;
 
   const user = await User.findOne({ email: email.toLowerCase().trim() });
   if (!user) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+    return next(unauthorized('Invalid credentials'));
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+    return next(unauthorized('Invalid credentials'));
   }
 
   const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
@@ -71,23 +73,23 @@ router.post('/login', validateBody(credentialsSchema), async (req, res) => {
   });
 });
 
-router.post('/refresh', validateBody(refreshSchema), async (req, res) => {
+router.post('/refresh', validateBody(refreshSchema), async (req, res, next) => {
   const { refreshToken } = req.body as z.infer<typeof refreshSchema>;
 
   try {
     const payload = verifyRefreshToken(refreshToken);
     if (!payload.jti) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return next(unauthorized('Invalid token'));
     }
 
     const stored = await RefreshToken.findOne({ tokenId: payload.jti });
     if (!stored || stored.revokedAt || stored.expiresAt.getTime() < Date.now()) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return next(unauthorized('Invalid token'));
     }
 
     const user = await User.findById(payload.sub);
     if (!user) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return next(unauthorized('Invalid token'));
     }
 
     const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
@@ -100,28 +102,28 @@ router.post('/refresh', validateBody(refreshSchema), async (req, res) => {
       refreshToken: newRefreshToken,
     });
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid token' });
+    return next(unauthorized('Invalid token'));
   }
 });
 
-router.post('/logout', validateBody(refreshSchema), async (req, res) => {
+router.post('/logout', validateBody(refreshSchema), async (req, res, next) => {
   const { refreshToken } = req.body as z.infer<typeof refreshSchema>;
 
   try {
     const payload = verifyRefreshToken(refreshToken);
     if (!payload.jti) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return next(unauthorized('Invalid token'));
     }
 
     const active = await isRefreshTokenActive(payload.jti);
     if (!active) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return next(unauthorized('Invalid token'));
     }
 
     await revokeRefreshToken(payload.jti);
     return res.status(204).send();
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid token' });
+    return next(unauthorized('Invalid token'));
   }
 });
 
@@ -131,6 +133,12 @@ router.get('/me', authGuard, async (req, res) => {
   }
 
   return res.json({ user: req.user });
+});
+
+router.post('/logout-all', authGuard, async (req, res, next) => {
+  if (!req.user) return next(unauthorized());
+  await revokeAllUserTokens(req.user.id);
+  return res.status(204).send();
 });
 
 export default router;

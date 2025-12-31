@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import app from '../app';
 import { User } from '../models/User';
 import { RefreshToken } from '../models/RefreshToken';
+import { pruneExpiredTokens } from '../services/tokenService';
 
 let mongo: MongoMemoryServer;
 
@@ -118,5 +119,35 @@ describe('Auth routes', () => {
     expect(stored?.revokedAt).not.toBeNull();
 
     await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(401);
+  });
+
+  it('logout-all revokes all tokens', async () => {
+    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const refreshToken = register.body.refreshToken as string;
+    const accessToken = register.body.accessToken as string;
+
+    // issue second token via refresh
+    const refreshed = await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(200);
+
+    await request(app)
+      .post('/api/auth/logout-all')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(204);
+
+    await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(401);
+    await request(app).post('/api/auth/refresh').send({ refreshToken: refreshed.body.refreshToken }).expect(401);
+  });
+
+  it('prunes expired tokens', async () => {
+    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const jti = decodeJti(register.body.refreshToken);
+    expect(jti).toBeDefined();
+
+    // mark expired
+    await RefreshToken.updateMany({}, { expiresAt: new Date(Date.now() - 1000) });
+    await pruneExpiredTokens();
+
+    const remaining = await RefreshToken.findOne({ tokenId: jti });
+    expect(remaining).toBeNull();
   });
 });

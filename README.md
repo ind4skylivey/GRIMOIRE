@@ -19,6 +19,10 @@ Create a backend `.env` (kept out of git):
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/grimoire
 JWT_SECRET=change-me
+JWT_REFRESH_SECRET=change-me-too
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=7d
+BCRYPT_SALT_ROUNDS=12
 ```
 
 ### Backend
@@ -35,6 +39,7 @@ cd frontend
 npm install
 npm start
 ```
+Optional: set API base with `REACT_APP_API_URL` (defaults to `http://localhost:5000`).
 
 ### Running Together
 - Ensure MongoDB is up and `MONGODB_URI` is reachable.
@@ -49,7 +54,8 @@ npm start
 ## Features (current)
 - Board creation and task lanes (React + react-beautiful-dnd).
 - Basic Express API scaffold with MongoDB connection.
-- JWT-ready backend skeleton.
+- JWT-ready backend skeleton plus refresh/logout token invalidation.
+- Auth UI flow with protected route guard and token storage.
 
 ## Roadmap (suggested)
 - Add authentication routes (signup/login/refresh) with bcrypt password hashing.

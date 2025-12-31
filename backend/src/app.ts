@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import authRouter from './routes/auth';
 import { errorHandler } from './middleware/errorHandler';
+import { HttpError } from './utils/errors';
 
 const app = express();
 
@@ -14,6 +15,8 @@ app.get('/', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+
+app.use((_req, _res, next) => next(new HttpError(404, 'Not Found')));
 
 // Global error handler
 app.use(errorHandler);
