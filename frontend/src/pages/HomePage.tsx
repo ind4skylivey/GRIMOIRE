@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../useAuth';
 import { fetchMe } from '../api/client';
 import SessionList from '../components/SessionList';
+import BoardList from '../components/BoardList';
 
 const HomePage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -31,6 +32,7 @@ const HomePage: React.FC = () => {
         {status && <p style={{ marginTop: '0.5rem' }}>{status}</p>}
       </div>
       <SessionList />
+      <BoardList />
     </div>
   );
 };

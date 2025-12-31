@@ -23,6 +23,7 @@ JWT_REFRESH_SECRET=change-me-too
 ACCESS_TOKEN_TTL=15m
 REFRESH_TOKEN_TTL=7d
 BCRYPT_SALT_ROUNDS=12
+CLEANUP_INTERVAL_MS=3600000  # token prune interval (1h default)
 ```
 
 ### Backend
