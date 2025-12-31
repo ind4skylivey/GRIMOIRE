@@ -149,15 +149,13 @@ Visit `http://localhost:3000` to start casting spells.
 
 ## 🗺️ The Prophecy (Roadmap)
 
-### Q1 2026 - Foundation
+### Q1 2026 - Foundation ⚡ IN PROGRESS
 - [x] Branding + assets
-- [x] Auth with JWT + refresh rotation + logout-all
+- [x] Auth with JWT + refresh rotation + logout-all  
 - [x] CRUD: pages (boards), spell schools (lists), spells (cards)
-- [ ] Drag & drop with animations
-- [ ] XP/achievements
-- [ ] Sound design
-- [ ] PWA setup
-- [ ] Initial deployment
+- [x] MongoDB + Express backend architecture
+- [ ] Drag & drop with animations (50% - basic DnD working)
+- [ ] XP/achievements (next priority)
 
 ### Q2 2026 - Enhancement
 - [ ] Real-time collaboration (WebSockets)
@@ -168,6 +166,13 @@ Visit `http://localhost:3000` to start casting spells.
 - [ ] Full i18n (EN/ES/FR)
 - [ ] Magic link sharing
 - [ ] Cover images & checklists
+
+---
+
+## 🌐 Live Demo
+
+🚧 **Coming Soon** — currently in active development.  
+For now, follow the [installation guide](#-summoning-ritual-installation) to run locally.
 
 ---
 
