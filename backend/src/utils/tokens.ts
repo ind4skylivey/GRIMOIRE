@@ -1,22 +1,25 @@
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
 import { env } from '../config/env';
+import { UserRole } from '../models/User';
 
 export type AccessTokenPayload = {
   sub: string;
   email: string;
-  role: string;
+  role: UserRole;
   type: 'access';
 };
 
 export type RefreshTokenPayload = {
   sub: string;
   type: 'refresh';
+  jti?: string;
+  exp?: number;
 };
 
 const accessSecret: Secret = env.JWT_SECRET;
 const refreshSecret: Secret = env.JWT_REFRESH_SECRET;
-export const signAccessToken = (user: { id: string; email: string; role: string }) =>
+export const signAccessToken = (user: { id: string; email: string; role: UserRole }) =>
   jwt.sign(
     { sub: user.id, email: user.email, role: user.role, type: 'access' } satisfies AccessTokenPayload,
     accessSecret,

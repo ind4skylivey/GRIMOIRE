@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import jwt from 'jsonwebtoken';
 import app from '../app';
 import { User } from '../models/User';
+import { RefreshToken } from '../models/RefreshToken';
 
 let mongo: MongoMemoryServer;
 
@@ -27,6 +29,8 @@ describe('Auth routes', () => {
   const email = 'user@example.com';
   const password = 'StrongP@ssw0rd!';
 
+  const decodeJti = (token: string) => (jwt.decode(token) as { jti?: string })?.jti;
+
   it('registers a user and returns tokens', async () => {
     const res = await request(app)
       .post('/api/auth/register')
@@ -40,6 +44,8 @@ describe('Auth routes', () => {
     const stored = await User.findOne({ email });
     expect(stored).not.toBeNull();
     expect(stored?.passwordHash).not.toBe(password);
+    const savedRefresh = await RefreshToken.findOne({ user: stored?._id });
+    expect(savedRefresh).not.toBeNull();
   });
 
   it('logs in an existing user', async () => {
@@ -49,12 +55,27 @@ describe('Auth routes', () => {
 
     expect(res.body.accessToken).toBeDefined();
     expect(res.body.refreshToken).toBeDefined();
+
+    const savedRefresh = await RefreshToken.findOne({ tokenId: decodeJti(res.body.refreshToken) });
+    expect(savedRefresh).not.toBeNull();
   });
 
   it('rejects invalid credentials', async () => {
     await request(app).post('/api/auth/register').send({ email, password }).expect(201);
 
-    await request(app).post('/api/auth/login').send({ email, password: 'wrong' }).expect(401);
+    await request(app).post('/api/auth/login').send({ email, password: 'wrongpassword' }).expect(401);
+  });
+
+  it('returns current user on /me when authorized', async () => {
+    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const accessToken = register.body.accessToken as string;
+
+    const res = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(res.body.user.email).toBe(email);
   });
 
   it('refreshes tokens', async () => {
@@ -66,5 +87,36 @@ describe('Auth routes', () => {
     expect(res.body.accessToken).toBeDefined();
     expect(res.body.refreshToken).toBeDefined();
     expect(res.body.refreshToken).not.toBe(refreshToken);
+
+    // old token should be revoked and new stored
+    const oldToken = await RefreshToken.findOne({ tokenId: decodeJti(refreshToken) });
+    const newToken = await RefreshToken.findOne({ tokenId: decodeJti(res.body.refreshToken) });
+    expect(oldToken?.revokedAt).not.toBeNull();
+    expect(newToken).not.toBeNull();
+  });
+
+  it('rejects refresh with revoked token', async () => {
+    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const refreshToken = register.body.refreshToken;
+    const jti = decodeJti(refreshToken);
+    expect(jti).toBeDefined();
+    if (jti) {
+      await RefreshToken.findOneAndUpdate({ tokenId: jti }, { revokedAt: new Date() });
+    }
+
+    await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(401);
+  });
+
+  it('logs out and revokes refresh token', async () => {
+    const register = await request(app).post('/api/auth/register').send({ email, password }).expect(201);
+    const refreshToken = register.body.refreshToken;
+    const jti = decodeJti(refreshToken);
+
+    await request(app).post('/api/auth/logout').send({ refreshToken }).expect(204);
+
+    const stored = await RefreshToken.findOne({ tokenId: jti });
+    expect(stored?.revokedAt).not.toBeNull();
+
+    await request(app).post('/api/auth/refresh').send({ refreshToken }).expect(401);
   });
 });
