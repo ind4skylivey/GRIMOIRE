@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../useAuth';
+import ErrorBanner from '../components/ErrorBanner';
+import { getErrorMessage } from '../api/client';
 
 const LoginPage: React.FC = () => {
   const { login, register } = useAuth();
@@ -23,7 +25,7 @@ const LoginPage: React.FC = () => {
       }
       navigate('/');
     } catch (err) {
-      setError('Authentication failed. Check your credentials.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ const LoginPage: React.FC = () => {
             required
           />
         </div>
-        {error && <p style={{ color: 'crimson' }}>{error}</p>}
+        <ErrorBanner message={error} />
         <button type="submit" disabled={loading} style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}>
           {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Register'}
         </button>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { client, logout } from '../api/client';
+import { client, logout, getErrorMessage } from '../api/client';
+import ErrorBanner from './ErrorBanner';
 
 type Session = {
   tokenId: string;
@@ -19,8 +20,8 @@ const SessionList: React.FC = () => {
     try {
       const res = await client.get<{ sessions: Session[] }>('/api/v1/auth/sessions');
       setSessions(res.data.sessions);
-    } catch {
-      setError('Unable to load sessions');
+    } catch (e) {
+      setError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -38,8 +39,8 @@ const SessionList: React.FC = () => {
       await client.post('/api/v1/auth/logout-all');
       await logout();
       setSuccess('All sessions revoked. Please sign in again.');
-    } catch {
-      setError('Failed to revoke sessions');
+    } catch (e) {
+      setError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -53,7 +54,7 @@ const SessionList: React.FC = () => {
           Logout all
         </button>
       </div>
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      <ErrorBanner message={error} />
       {success && <p style={{ color: 'green' }}>{success}</p>}
       {loading && <p>Loading…</p>}
       <ul>

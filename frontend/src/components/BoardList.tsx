@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Board, Card, createBoard, createCard, deleteBoard, deleteCard, listBoards, listCards, updateBoard, updateCard } from '../api/boards';
+import {
+  Board,
+  Card,
+  createBoard,
+  createCard,
+  deleteBoard,
+  deleteCard,
+  listBoards,
+  listCards,
+  updateBoard,
+  updateCard,
+} from '../api/boards';
+import ErrorBanner from './ErrorBanner';
+import { getErrorMessage } from '../api/client';
 
 type ErrorState = string | null;
 
@@ -24,7 +37,7 @@ const BoardList: React.FC = () => {
         setSelectedBoard(data[0]);
       }
     } catch (e) {
-      setError('Failed to load boards');
+      setError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -37,7 +50,7 @@ const BoardList: React.FC = () => {
       const data = await listCards(boardId);
       setCards(data);
     } catch (e) {
-      setError('Failed to load cards');
+      setError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -63,8 +76,8 @@ const BoardList: React.FC = () => {
       setBoardTitle('');
       setBoardDesc('');
       setSelectedBoard(board);
-    } catch {
-      setError('Failed to create board');
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 
@@ -76,8 +89,8 @@ const BoardList: React.FC = () => {
       setCards((prev) => [...prev, card]);
       setCardTitle('');
       setCardDesc('');
-    } catch {
-      setError('Failed to create card');
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 
@@ -89,8 +102,8 @@ const BoardList: React.FC = () => {
         setSelectedBoard(null);
         setCards([]);
       }
-    } catch {
-      setError('Failed to delete board');
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 
@@ -99,8 +112,8 @@ const BoardList: React.FC = () => {
     try {
       await deleteCard(selectedBoard._id, id);
       setCards((prev) => prev.filter((c) => c._id !== id));
-    } catch {
-      setError('Failed to delete card');
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 
@@ -109,8 +122,8 @@ const BoardList: React.FC = () => {
     try {
       const updated = await updateCard(selectedBoard._id, id, { status });
       setCards((prev) => prev.map((c) => (c._id === id ? updated : c)));
-    } catch {
-      setError('Failed to update card');
+    } catch (e) {
+      setError(getErrorMessage(e));
     }
   };
 
@@ -118,7 +131,7 @@ const BoardList: React.FC = () => {
     <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
       <div>
         <h3>Boards</h3>
-        {error && <p style={{ color: 'crimson' }}>{error}</p>}
+        <ErrorBanner message={error} />
         <ul>
           {boards.map((b) => (
             <li key={b._id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

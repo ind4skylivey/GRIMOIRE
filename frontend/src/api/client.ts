@@ -110,3 +110,15 @@ export async function fetchMe() {
   const res = await client.get<{ user: { id: string; email: string; role: string } }>('/api/auth/me');
   return res.data.user;
 }
+
+export function getErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const data: any = err.response?.data;
+    if (data?.error) {
+      return data.error;
+    }
+    if (err.message) return err.message;
+  }
+  if (err instanceof Error) return err.message;
+  return 'Unexpected error';
+}
