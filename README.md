@@ -1,12 +1,27 @@
-# GRIMOIRE
+# GRIMOIRE 🧙‍♂️
 
-Enchant your workflow with a secure, Kanban-inspired task manager.
+Enchant your workflow with a secure, Kanban-inspired task manager built for disciplined teams.
+
+![Stack](https://img.shields.io/badge/Stack-React%20%7C%20Node%20%7C%20Mongo-orange)
+![Auth](https://img.shields.io/badge/Auth-JWT-blue)
+![Tests](https://img.shields.io/badge/Backend%20Tests-Jest%20%2B%20Supertest-green)
+![License](https://img.shields.io/badge/License-MIT-black)
+
+## Table of Contents
+1. [Architecture](#architecture)
+2. [Quick Start](#quick-start)
+3. [Environment](#environment)
+4. [Development Scripts](#development-scripts)
+5. [API Map (v1)](#api-map-v1)
+6. [Security Defaults](#security-defaults)
+7. [Testing](#testing)
+8. [Deployment Notes](#deployment-notes)
 
 ## Architecture
-- **Frontend:** React + TypeScript (CRA)
-- **Backend:** Node.js (Express) + MongoDB
-- **Auth:** JWT
-- **Styling:** TailwindCSS-ready (or swap your own)
+- **Frontend:** React + TypeScript (CRA), axios client with 401 refresh + retry
+- **Backend:** Node.js (Express) + MongoDB, JWT access/refresh with rotation and revocation store
+- **Auth UI:** Protected routes, session list, logout-all
+- **Kanban Data:** Boards and Cards under `/api/v1/boards`
 
 ## Quick Start
 ### Prerequisites
@@ -14,7 +29,7 @@ Enchant your workflow with a secure, Kanban-inspired task manager.
 - MongoDB instance (local or remote)
 
 ### Environment
-Create a backend `.env` (kept out of git):
+Create `backend/.env` (git-ignored):
 ```
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/grimoire
@@ -25,13 +40,14 @@ REFRESH_TOKEN_TTL=7d
 BCRYPT_SALT_ROUNDS=12
 CLEANUP_INTERVAL_MS=3600000  # token prune interval (1h default)
 ```
+Optional frontend: `REACT_APP_API_URL` (defaults to `http://localhost:5000`).
 
 ### Backend
 ```bash
 cd backend
 npm install
-npm run dev       # ts-node + nodemon
-# npm run build && npm start  # production
+npm run dev          # ts-node + nodemon
+# npm run build && npm start   # production
 ```
 
 ### Frontend
@@ -40,41 +56,34 @@ cd frontend
 npm install
 npm start
 ```
-Optional: set API base with `REACT_APP_API_URL` (defaults to `http://localhost:5000`).
 
-### Running Together
-- Ensure MongoDB is up and `MONGODB_URI` is reachable.
-- Start backend first, then frontend; frontend expects backend at `http://localhost:5000` (configure as needed).
+### Run Together
+- Start MongoDB, then backend, then frontend.
+- Frontend expects API at `http://localhost:5000` (or your `REACT_APP_API_URL`).
 
-## Security & Data Hygiene
-- `.gitignore` follows default-deny: secrets, runtime outputs, `docs/` (production-only), scans, and generated artifacts stay out of git.
-- Client configs live in `clients/`; only sanitized templates (`example.toml`) are versioned. Real client files stay local.
-- Use `.env` files for secrets; never commit them. Rotate `JWT_SECRET` regularly.
-- Prefer least privilege MongoDB users for deployments.
+## Development Scripts
+- Backend: `npm run dev` (watch), `npm test -- --runInBand`, `npm run build`
+- Frontend: `npm start`, `npm run build`
 
-## Features (current)
-- Board creation and task lanes (React + react-beautiful-dnd).
-- Basic Express API scaffold with MongoDB connection.
-- JWT-ready backend skeleton plus refresh/logout token invalidation.
-- Auth UI flow with protected route guard and token storage.
+## API Map (v1)
+- **Auth:** `POST /api/v1/auth/register | login | refresh | logout | logout-all`, `GET /api/v1/auth/me`, `GET /api/v1/auth/sessions`
+- **Boards:** `GET/POST /api/v1/boards`, `GET/PATCH/DELETE /api/v1/boards/:boardId`
+- **Cards:** `GET/POST /api/v1/boards/:boardId/cards`, `PATCH/DELETE /api/v1/boards/:boardId/cards/:cardId`
+- **Ops:** `GET /api/v1/metrics` (uptime, memory, token stats; auth required)
 
-## Roadmap (suggested)
-- Add authentication routes (signup/login/refresh) with bcrypt password hashing.
-- Implement board/card CRUD with ownership checks and audit-friendly logs.
-- Add role-based access control (RBAC) and rate limiting.
-- Integrate CI checks: lint, test, dependency audit.
+## Security Defaults
+- Default-deny `.gitignore`; `docs/` excluded from VCS.
+- Secrets live in `.env`; never commit them. Rotate `JWT_SECRET`/`JWT_REFRESH_SECRET` regularly.
+- Refresh tokens stored and revocable; cleanup runs every `CLEANUP_INTERVAL_MS`.
+- Validation on all auth/board/card payloads (zod); consistent JSON errors via `HttpError` middleware.
+- Mongo users should run least privilege per environment.
 
-## Development Conventions
-- Branch names: `feature/<name>` or `fix/<issue>`.
-- Commits: `[TYPE] Summary` (e.g., `[FIX] Handle auth expiry`).
-- Keep code in English, follow SOLID/DRY, avoid unchecked `.unwrap()` equivalents, and include concise comments only where needed.
-
-## Testing (add-on)
-- Frontend: `npm test` (Jest/RTL via CRA).
-- Backend: add Jest + supertest; sample script to be added (`npm test`).
-- Use `git status --ignored` before commits to ensure secrets/artifacts remain out of VCS.
+## Testing
+- Backend: `cd backend && npm test -- --runInBand` (Jest + supertest + mongodb-memory-server)
+- Frontend: CRA defaults (`npm test`) — expand as UI grows.
 
 ## Deployment Notes
-- Build frontend (`npm run build`) and serve via your preferred static host or CDN.
-- Run backend with `npm run build && npm start` behind a process manager (PM2/systemd) and HTTPS termination.
-- Configure CORS origins for your deployed frontend domain.
+- Build frontend: `npm run build` and serve via static host/CDN.
+- Backend: `npm run build && npm start` behind HTTPS + process manager (PM2/systemd).
+- Set CORS allowlist for your deployed frontend origin.
+- Tune `CLEANUP_INTERVAL_MS` and monitor `/api/v1/metrics` for token/store health.
