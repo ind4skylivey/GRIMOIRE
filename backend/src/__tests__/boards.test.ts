@@ -46,7 +46,7 @@ describe('Board and card routes', () => {
     expect(listRes.body.boards).toHaveLength(1);
   });
 
-  it('creates, updates, and deletes cards under a board', async () => {
+  it('creates lists and cards under a board', async () => {
     const token = await registerAndGetToken();
     const { body: boardBody } = await request(app)
       .post('/api/v1/boards')
@@ -56,8 +56,16 @@ describe('Board and card routes', () => {
 
     const boardId = boardBody.board._id as string;
 
+    const { body: listBody } = await request(app)
+      .post(`/api/v1/boards/${boardId}/lists`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'List 1' })
+      .expect(201);
+
+    const listId = listBody.list._id as string;
+
     const createCard = await request(app)
-      .post(`/api/v1/boards/${boardId}/cards`)
+      .post(`/api/v1/boards/${boardId}/lists/${listId}/cards`)
       .set('Authorization', `Bearer ${token}`)
       .send({ title: 'Card 1', description: 'd1' })
       .expect(201);
@@ -65,7 +73,7 @@ describe('Board and card routes', () => {
     const cardId = createCard.body.card._id as string;
 
     const updateCard = await request(app)
-      .patch(`/api/v1/boards/${boardId}/cards/${cardId}`)
+      .patch(`/api/v1/boards/${boardId}/lists/${listId}/cards/${cardId}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ status: 'doing' })
       .expect(200);
@@ -73,7 +81,7 @@ describe('Board and card routes', () => {
     expect(updateCard.body.card.status).toBe('doing');
 
     await request(app)
-      .delete(`/api/v1/boards/${boardId}/cards/${cardId}`)
+      .delete(`/api/v1/boards/${boardId}/lists/${listId}/cards/${cardId}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(204);
 
