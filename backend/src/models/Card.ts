@@ -20,7 +20,7 @@ const CardSchema = new Schema<CardDocument>(
     title: { type: String, required: true, trim: true },
     description: { type: String, default: '' },
     status: { type: String, enum: ['todo', 'doing', 'done'], default: 'todo' },
-    position: { type: Number, default: 0 },
+    position: { type: Number, default: 1024, index: true },
   },
   { timestamps: true }
 );

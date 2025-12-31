@@ -12,7 +12,7 @@ const ListSchema = new Schema<ListDocument>(
   {
     board: { type: Schema.Types.ObjectId, ref: 'Board', required: true, index: true },
     title: { type: String, required: true, trim: true },
-    position: { type: Number, default: 0 },
+    position: { type: Number, default: 1024, index: true },
   },
   { timestamps: true }
 );

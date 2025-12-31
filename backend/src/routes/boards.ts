@@ -9,6 +9,29 @@ import { validateBody } from '../middleware/validate';
 
 const router = Router();
 
+const DEFAULT_GAP = 1024;
+
+const computeNextPosition = async (
+  collection: typeof List | typeof Card,
+  filter: Record<string, unknown>
+) => {
+  const max = await collection.find(filter as any).sort({ position: -1 }).limit(1).lean();
+  const currentMax = max[0]?.position ?? 0;
+  return currentMax + DEFAULT_GAP;
+};
+
+const computeBetween = (prev?: number, next?: number) => {
+  if (prev === undefined && next === undefined) return DEFAULT_GAP;
+  if (prev === undefined && next !== undefined) return next - DEFAULT_GAP / 2;
+  if (prev !== undefined && next === undefined) return prev + DEFAULT_GAP;
+  if (prev !== undefined && next !== undefined) {
+    const mid = (prev + next) / 2;
+    if (mid === prev || mid === next) return prev + DEFAULT_GAP; // fallback to maintain gap
+    return mid;
+  }
+  return DEFAULT_GAP;
+};
+
 const boardSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
@@ -92,7 +115,11 @@ router.post('/:boardId/lists', validateBody(listSchema), async (req, res, next) 
   const board = await Board.findOne({ _id: req.params.boardId, owner: req.user.id });
   if (!board) return next(notFound('Board not found'));
 
-  const list = await List.create({ ...req.body, board: board.id });
+  const position =
+    req.body.position ??
+    (await computeNextPosition(List, { board: board.id }));
+
+  const list = await List.create({ ...req.body, position, board: board.id });
   return res.status(201).json({ list });
 });
 
@@ -140,7 +167,11 @@ router.post('/:boardId/lists/:listId/cards', validateBody(cardSchema), async (re
   const list = await List.findOne({ _id: req.params.listId, board: board.id });
   if (!list) return next(notFound('List not found'));
 
-  const card = await Card.create({ ...req.body, board: board.id, list: list.id });
+  const position =
+    req.body.position ??
+    (await computeNextPosition(Card, { board: board.id, list: list.id }));
+
+  const card = await Card.create({ ...req.body, position, board: board.id, list: list.id });
   return res.status(201).json({ card });
 });
 
@@ -159,6 +190,12 @@ router.patch('/:boardId/lists/:listId/cards/:cardId', validateBody(cardUpdateSch
   }
 
   const updatePayload = { ...req.body, list: req.body.list ?? targetList.id };
+
+  // recompute position if missing and target list differs
+  if (req.body.list && req.body.position === undefined) {
+    const maxPos = await computeNextPosition(Card, { board: board.id, list: req.body.list });
+    updatePayload.position = maxPos;
+  }
 
   const card = await Card.findOneAndUpdate(
     { _id: req.params.cardId, board: board.id },
