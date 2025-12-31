@@ -3,8 +3,11 @@
 Enchant your workflow with a secure, Kanban-inspired task manager built for disciplined teams.
 
 ![Stack](https://img.shields.io/badge/Stack-React%20%7C%20Node%20%7C%20Mongo-orange)
+![API](https://img.shields.io/badge/API-v1-blueviolet)
 ![Auth](https://img.shields.io/badge/Auth-JWT-blue)
 ![Tests](https://img.shields.io/badge/Backend%20Tests-Jest%20%2B%20Supertest-green)
+![Runtime](https://img.shields.io/badge/Node-18%2B-6aa84f)
+![Database](https://img.shields.io/badge/DB-MongoDB-4caf50)
 ![License](https://img.shields.io/badge/License-MIT-black)
 
 ## Table of Contents
