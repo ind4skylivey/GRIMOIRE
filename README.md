@@ -1,45 +1,109 @@
 <div align="center">
-  <img src="./assets/grimoire-banner.png" alt="GRIMOIRE Banner" width="100%">
-  
-  # 🔮 GRIMOIRE
-  
-  **Enchant your workflow. Illuminate the path to done.**
-  
-  A mystical Kanban task management app where productivity meets magic ✨
-  
-  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-  [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-  
-  [✨ Features](#-features) • [🚀 Quick Start](#-quick-start) • [📖 Documentation](#-magic-terminology) • [🎮 Roadmap](#-roadmap)
+
+![GRIMOIRE Banner](./assets/grimoire-banner.png)
+
+<img src="./assets/grimoire-logo.png" alt="GRIMOIRE" width="180">
+
+### ✨ *Enchant your workflow. Illuminate the path to done.* ✨
+
+*Where ancient wisdom meets modern productivity.*
+
+[![Status](https://img.shields.io/badge/Status-✨_Enchanting-9333EA?style=for-the-badge)]()
+[![Made with Magic](https://img.shields.io/badge/Made_with-🔮_Magic-9333EA?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-MIT-FBBF24?style=for-the-badge)](LICENSE)
+
+[![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)]()
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)]()
+[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)]()
+[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)]()
+
+[📖 Read the Scrolls](#-the-ancient-scrolls-documentation) • 
+[🎯 Begin Your Quest](#-summoning-ritual-installation) • 
+[🔮 Discover Powers](#-mystical-powers-features) • 
+[🌟 Join the Coven](#-join-the-coven-contributing)
+
 </div>
 
 ---
 
-## ✨ Features
+## 📜 The Legend Begins...
 
-🔮 **Mystical Interface** - Dark-first theme with magical accents and (future) particle effects  
-🎮 **Gamification** - XP/achievements/levels (roadmap)  
-🎯 **Drag & Drop Magic** - Smooth Kanban board with spell casting vibes (roadmap)  
-🌙 **Dark Mode First** - Illuminated light mode planned  
-🎵 **Sound Design** - Magical SFX planned for actions  
-⌨️ **Power User Shortcuts** - Command palette + vim-style nav (roadmap)  
-📱 **PWA Ready** - Install as native app (roadmap)  
-🌐 **Multilingual** - EN/ES planned; terminology mapped below  
+**GRIMOIRE** is not just another task management app—it’s a mystical experience that turns your workflow into an enchanting journey. Built by wizards, for wizards who refuse to let productivity be ordinary.
+
+### 🎭 What Makes This Grimoire Special?
+- 🔮 Dark arts of productivity – obsidian UI with purple energy
+- ⚡ Spell casting mechanics – celebratory effects on completion
+- 🎮 XP & achievements – level up from *Apprentice* to *Grandmaster*
+- 🎵 Arcane sound design (roadmap)
+- ✨ Magical animations (roadmap)
+- 🌙 Moonlit interface – dark by default
+- ⌨️ Wizard shortcuts – command palette (Cmd/Ctrl+K) planned
+- 📱 Portable grimoire – PWA readiness (roadmap)
 
 ---
 
-## 🎨 Screenshots
+## 🔮 Mystical Powers (Features)
+
+### 🎯 Spell Management
+- Create spells (tasks) with flair
+- Drag & drop Kanban (planned DnD polish)
+- Mastery status (complete)
+- Grimoire Pages (boards)
+- Spell Schools (lists)
+- Rituals (recurring; roadmap)
+
+### 🎮 Arcane Progression
+- XP per mastered spell (roadmap)
+- Achievements and ranks (roadmap)
+- Daily streaks (roadmap)
+
+### 🌙 Visual Enchantments
+- Obsidian theme by default
+- Particle effects and micro-animations (roadmap)
+- Custom magical iconography (roadmap)
+
+### ⚡ Power User Magic
+- Keyboard wizardry (Cmd/Ctrl+K, J/K nav; roadmap)
+- Instant search, runes/tags, prophecy dates (roadmap)
+
+---
+
+## 🎨 Glimpses into the Void (Screenshots)
 
 <div align="center">
-  <img src="./assets/screenshot-dashboard.png" width="48%" alt="Dashboard preview">
-  <img src="./assets/screenshot-board.png" width="48%" alt="Board preview">
+
+### 📖 The Grimoire Dashboard  
+*(placeholder — add real capture soon)*
+
+<img src="./assets/screenshot-dashboard.png" width="90%" alt="GRIMOIRE Dashboard">
+
+### 🎯 The Spell Casting Board  
+*(placeholder — add real capture soon)*
+
+<img src="./assets/screenshot-board.png" width="90%" alt="Kanban Board">
+
 </div>
 
 ---
 
-## 🚀 Quick Start
+## 📖 The Sacred Lexicon (Magic Terminology)
+
+| 🚫 Mundane World | ✨ GRIMOIRE Realm | 🔮 Meaning |
+|:---:|:---:|:---|
+| Boards | **Grimoire Pages** | Sacred pages of your tome |
+| Lists | **Spell Schools** | Magical disciplines |
+| Tasks | **Spells** | Individual enchantments |
+| Complete | **Mastered** | Spell successfully woven |
+| Archive | **Sealed in the Vault** | Locked away |
+| Due Date | **Prophecy Date** | When the spell must manifest |
+| Recurring | **Ritual** | Repeating ceremony |
+| Labels | **Runes** | Mystical symbols |
+| Priority | **Spell Power** | Urgency of enchantment |
+
+---
+
+## 🎯 Summoning Ritual (Installation)
 
 ### Prerequisites
 - Node.js 18+
@@ -50,102 +114,88 @@
 ```bash
 cd backend
 npm install
-# create backend/.env (see env block)
-npm run dev          # ts-node + nodemon
-# npm run build && npm start   # production
+cp .env.example .env   # create this file using the keys below
+# .env keys:
+# PORT=5000
+# MONGODB_URI=mongodb://localhost:27017/grimoire
+# JWT_SECRET=change-me
+# JWT_REFRESH_SECRET=change-me-too
+# ACCESS_TOKEN_TTL=15m
+# REFRESH_TOKEN_TTL=7d
+# BCRYPT_SALT_ROUNDS=12
+# CLEANUP_INTERVAL_MS=3600000
+npm run dev
 ```
 
 ### Frontend
 ```bash
 cd frontend
 npm install
+# Optional: REACT_APP_API_URL=http://localhost:5000
 npm start
 ```
-Optional: `REACT_APP_API_URL` (defaults to `http://localhost:5000`).
 
-### Environment (backend/.env)
-```
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/grimoire
-JWT_SECRET=change-me
-JWT_REFRESH_SECRET=change-me-too
-ACCESS_TOKEN_TTL=15m
-REFRESH_TOKEN_TTL=7d
-BCRYPT_SALT_ROUNDS=12
-CLEANUP_INTERVAL_MS=3600000
-```
-
-Visit `http://localhost:3000` and start casting spells! 🔮
+Visit `http://localhost:3000` to start casting spells.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Arcane Architecture (Tech Stack)
 
-**Frontend:** React 18 + TypeScript, axios, (upcoming) TailwindCSS, react-beautiful-dnd (to be migrated), Framer Motion (planned)  
-**State:** Context + local state now; roadmap: Zustand  
-**Backend:** Node.js + Express, MongoDB, JWT auth (access + refresh with rotation/revocation)  
-**DevOps:** GitHub Actions (planned), Docker Compose (planned), Vercel/Render (planned)
-
----
-
-## 📖 Magic Terminology
-
-| Traditional | GRIMOIRE |
-|------------|----------|
-| Boards | 🔮 **Grimoire Pages** |
-| Lists | 📚 **Spell Schools** |
-| Tasks | ✨ **Spells** |
-| Complete | 🎯 **Mastered** |
-| Archive | 🔒 **Sealed in the Vault** |
-| Due Date | 📅 **Prophecy Date** |
-| Recurring | 🔄 **Ritual** |
+**Frontend:** React 18 + TypeScript, axios, (planned) TailwindCSS, react-beautiful-dnd (to migrate), Framer Motion (planned), Zustand (planned)  
+**Backend:** Node.js + Express, MongoDB/Mongoose, JWT + bcrypt, zod validation, token revocation store  
+**DevOps:** GitHub Actions (planned), Docker Compose (planned), Vercel (FE) / Render (BE) (planned)
 
 ---
 
-## 🎮 Roadmap
+## 🗺️ The Prophecy (Roadmap)
 
-### Q1 2026 - MVP
-- [x] Authentication (JWT, refresh rotation, logout-all)
-- [x] CRUD: Boards + Lists + Cards
-- [ ] Drag & Drop with animations
-- [ ] XP system & achievements
+### Q1 2026 - Foundation
+- [x] Branding + assets
+- [x] Auth with JWT + refresh rotation + logout-all
+- [x] CRUD: pages (boards), spell schools (lists), spells (cards)
+- [ ] Drag & drop with animations
+- [ ] XP/achievements
 - [ ] Sound design
 - [ ] PWA setup
-- [ ] Deployment (Vercel/Render)
+- [ ] Initial deployment
 
 ### Q2 2026 - Enhancement
 - [ ] Real-time collaboration (WebSockets)
-- [ ] Advanced filters & search
-- [ ] Mobile app (React Native)
-- [ ] Third-party integrations
+- [ ] Advanced search & filters
+- [ ] Custom runes/labels
+- [ ] Calendar view (prophecy dates)
 - [ ] Analytics dashboard
+- [ ] Full i18n (EN/ES/FR)
+- [ ] Magic link sharing
+- [ ] Cover images & checklists
 
 ---
 
-## 🤝 Contributing
+## 🌟 Join the Coven (Contributing)
 
-Contributions are welcome! (No bots; English only.)
+1. Fork the Grimoire  
+2. Branch: `git checkout -b feature/amazing-spell`  
+3. Cast your spell (code)  
+4. Test your magic  
+5. Commit with runes: `git commit -m '✨ Add amazing spell'`  
+6. Push and open a PR  
 
-1. Fork the project  
-2. Create your feature branch (`git checkout -b feature/AmazingSpell`)  
-3. Commit (`git commit -m '✨ Add AmazingSpell'`)  
-4. Push (`git push origin feature/AmazingSpell`)  
-5. Open a Pull Request  
+Guidelines: keep code in English, add tests where relevant, update docs when behavior changes.
 
 ---
 
-## 📄 License
+## 📄 The Magical Contract (License)
 
 MIT — see [LICENSE](LICENSE).
 
 ---
 
 <div align="center">
-  
-  ### 🔮 Ready to enchant your workflow?
-  
-  ⭐ Star this repo if you believe in productivity magic! ⭐
-  
-  Made with 💜 by wizards, for wizards
-  
+
+### 🔮 Ready to enchant your workflow?
+
+⭐ Star this repo if you believe in productivity magic! ⭐  
+
+Made with 💜 by wizards, for wizards.
+
 </div>
