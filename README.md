@@ -199,3 +199,7 @@ MIT — see [LICENSE](LICENSE).
 Made with 💜 by wizards, for wizards.
 
 </div>
+
+<div align="center">
+  <img src="./assets/grimoire-logo.png" alt="GRIMOIRE logo" width="200">
+</div>
