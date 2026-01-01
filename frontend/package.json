@@ -24,7 +24,6 @@
     "ajv": "^8.17.1",
     "axios": "^1.13.2",
     "react": "^18.2.0",
-    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.11.0",
     "react-scripts": "^5.0.1",
