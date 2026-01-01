@@ -101,6 +101,7 @@ const BoardList: React.FC = () => {
   const [cardDesc, setCardDesc] = useState('');
   const [error, setError] = useState<ErrorState>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -394,7 +395,12 @@ const BoardList: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 text-[color:var(--text)]">
+    <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 text-[color:var(--text)]">
+      {loading && (
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-10">
+          <div className="glow-button animate-pulse">Loading spells…</div>
+        </div>
+      )}
       <div className="card-surface p-4 lg:col-span-1">
         <h3 className="font-display text-xl text-primary">Grimoire Pages</h3>
         <ErrorBanner message={error} />
@@ -423,7 +429,7 @@ const BoardList: React.FC = () => {
             onChange={(e) => setBoardDesc(e.target.value)}
           />
           <button type="submit" disabled={loadingAction} className="glow-button w-full">
-            Create board
+            {loadingAction ? 'Summoning…' : 'Create board'}
           </button>
         </form>
       </div>
@@ -453,7 +459,7 @@ const BoardList: React.FC = () => {
                 required
               />
               <button type="submit" disabled={loadingAction} className="glow-button">
-                Add school
+                {loadingAction ? 'Summoning…' : 'Add school'}
               </button>
             </form>
 
