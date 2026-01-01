@@ -18,21 +18,33 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 720, margin: '2rem auto', padding: '1rem' }}>
-      <h1>GRIMOIRE</h1>
-      <p>Enchant your workflow. Authenticated session active.</p>
-      <div style={{ padding: '0.75rem', border: '1px solid #ddd', borderRadius: 8, marginBottom: '1rem' }}>
-        <p>
-          Signed in as <strong>{user?.email}</strong> ({user?.role})
-        </p>
-        <button onClick={logout}>Logout</button>
+    <div className="min-h-screen bg-[color:var(--bg)] text-[color:var(--text)]">
+      <div className="max-w-6xl mx-auto px-4 py-8 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h1 className="font-display text-3xl text-primary">GRIMOIRE</h1>
+            <p className="text-sm opacity-80">Enchant your workflow. Authenticated session active.</p>
+          </div>
+          <button onClick={logout} className="glow-button w-full md:w-auto">
+            Logout
+          </button>
+        </div>
+
+        <div className="card-surface p-4 space-y-2">
+          <p>
+            Signed in as <strong>{user?.email}</strong> ({user?.role})
+          </p>
+          <div className="flex gap-2 items-center">
+            <button onClick={handleMe} className="glow-button">
+              Check /api/auth/me
+            </button>
+            {status && <span className="text-xs opacity-80">{status}</span>}
+          </div>
+        </div>
+
+        <SessionList />
+        <BoardList />
       </div>
-      <div>
-        <button onClick={handleMe}>Check /api/auth/me</button>
-        {status && <p style={{ marginTop: '0.5rem' }}>{status}</p>}
-      </div>
-      <SessionList />
-      <BoardList />
     </div>
   );
 };

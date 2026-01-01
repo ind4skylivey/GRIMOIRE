@@ -97,6 +97,8 @@ const BoardList: React.FC = () => {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
+  const sortLists = (ls: List[]) => [...ls].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
   const loadBoards = async () => {
     setLoading(true);
     setError(null);
@@ -117,7 +119,7 @@ const BoardList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const fetchedLists = (await listLists(boardId)).sort((a, b) => a.position - b.position);
+      const fetchedLists = sortLists(await listLists(boardId));
       setLists(fetchedLists);
       const cardMap: Record<string, Card[]> = {};
       for (const lst of fetchedLists) {
@@ -178,7 +180,7 @@ const BoardList: React.FC = () => {
     if (!selectedBoard) return;
     try {
       const list = await createList(selectedBoard._id, listTitle);
-      setLists((prev) => [...prev, list]);
+      setLists((prev) => sortLists([...prev, list]));
       setCardsByList((prev) => ({ ...prev, [list._id]: [] }));
       setListTitle('');
       toast.success('Spell school added');
@@ -288,7 +290,8 @@ const BoardList: React.FC = () => {
     const prevState = lists;
     try {
       const updated = await updateList(selectedBoard!._id, activeId, { position: newPos });
-      setLists((prev) => prev.map((l) => (l._id === updated._id ? { ...l, position: updated.position } : l)));
+      setLists((prev) => sortLists(prev.map((l) => (l._id === updated._id ? { ...l, position: updated.position } : l))));
+      toast.success('Spell school reordered');
     } catch (e) {
       setError(getErrorMessage(e));
       setLists(prevState);

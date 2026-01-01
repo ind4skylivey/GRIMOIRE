@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../useAuth';
 import ErrorBanner from '../components/ErrorBanner';
 import { getErrorMessage } from '../api/client';
+import clsx from 'clsx';
 
 const LoginPage: React.FC = () => {
   const { login, register } = useAuth();
@@ -32,47 +33,59 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 360, margin: '4rem auto', padding: '1.5rem', border: '1px solid #ccc', borderRadius: 8 }}>
-      <h1 style={{ marginBottom: '1rem' }}>{mode === 'login' ? 'Sign in' : 'Create account'}</h1>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            required
-          />
-        </div>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            required
-          />
-        </div>
-        <ErrorBanner message={error} />
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}>
-          {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Register'}
-        </button>
-      </form>
-      <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-        {mode === 'login' ? (
-          <button type="button" onClick={() => setMode('register')}>
-            Need an account? Register
+    <div className="min-h-screen bg-[color:var(--bg)] flex items-center justify-center px-4">
+      <div className="card-surface max-w-md w-full p-6">
+        <h1 className="font-display text-2xl text-primary mb-3 text-center">
+          {mode === 'login' ? 'Sign in to your Grimoire' : 'Create your Grimoire'}
+        </h1>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-sm mb-1" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg bg-surface border border-primary/30 px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg bg-surface border border-primary/30 px-3 py-2"
+              required
+            />
+          </div>
+          <ErrorBanner message={error} />
+          <button
+            type="submit"
+            disabled={loading}
+            className={clsx('glow-button w-full', loading && 'opacity-80')}
+          >
+            {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Register'}
           </button>
-        ) : (
-          <button type="button" onClick={() => setMode('login')}>
-            Have an account? Sign in
-          </button>
-        )}
+        </form>
+        <div className="mt-4 text-center">
+          {mode === 'login' ? (
+            <button type="button" onClick={() => setMode('register')} className="text-primary">
+              Need an account? Register
+            </button>
+          ) : (
+            <button type="button" onClick={() => setMode('login')} className="text-primary">
+              Have an account? Sign in
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
