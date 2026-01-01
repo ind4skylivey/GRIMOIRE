@@ -4,11 +4,13 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import { AuthProvider } from './AuthProvider';
+import { Toaster } from 'react-hot-toast';
 
 const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Toaster position="top-right" />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route

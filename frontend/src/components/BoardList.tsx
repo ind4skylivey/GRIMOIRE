@@ -33,6 +33,8 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import toast from 'react-hot-toast';
+import clsx from 'clsx';
 
 type ErrorState = string | null;
 
@@ -115,11 +117,11 @@ const BoardList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const fetchedLists = await listLists(boardId);
+      const fetchedLists = (await listLists(boardId)).sort((a, b) => a.position - b.position);
       setLists(fetchedLists);
       const cardMap: Record<string, Card[]> = {};
       for (const lst of fetchedLists) {
-        const cards = await listCards(boardId, lst._id);
+        const cards = (await listCards(boardId, lst._id)).sort((a, b) => a.position - b.position);
         cardMap[lst._id] = cards;
       }
       setCardsByList(cardMap);
@@ -247,6 +249,42 @@ const BoardList: React.FC = () => {
     return null;
   };
 
+  const computePosition = (items: { position: number }[], targetIndex: number) => {
+    const prev = items[targetIndex - 1]?.position;
+    const next = items[targetIndex + 1]?.position;
+    if (prev === undefined && next === undefined) return 1024;
+    if (prev === undefined) return next! / 2;
+    if (next === undefined) return prev + 1024;
+    const mid = (prev + next) / 2;
+    if (mid === prev || mid === next) return prev + 1024;
+    return mid;
+  };
+
+  const handleListDragEnd = async (event: DragEndEvent) => {
+    setActiveCardId(null);
+    const { active, over } = event;
+    if (!over) return;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (activeId === overId) return;
+    const oldIndex = lists.findIndex((l) => l._id === activeId);
+    const newIndex = lists.findIndex((l) => l._id === overId);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newLists = arrayMove(lists, oldIndex, newIndex);
+    setLists(newLists);
+
+    const newPos = computePosition(newLists, newIndex);
+    const prevState = lists;
+    try {
+      const updated = await updateList(selectedBoard!._id, activeId, { position: newPos });
+      setLists((prev) => prev.map((l) => (l._id === updated._id ? { ...l, position: updated.position } : l)));
+    } catch (e) {
+      setError(getErrorMessage(e));
+      setLists(prevState);
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     setActiveCardId(null);
     const { active, over } = event;
@@ -271,14 +309,16 @@ const BoardList: React.FC = () => {
     const sourceCards = cardsByList[sourceListId] ?? [];
     const targetCards = cardsByList[targetListId] ?? [];
 
-    let newTargetCards = targetCards;
     let targetIndex = targetCards.findIndex((c) => c._id === overId);
     if (targetIndex === -1) targetIndex = targetCards.length;
 
+    const prevState = { lists: [...lists], cardsByList: JSON.parse(JSON.stringify(cardsByList)) as typeof cardsByList };
+
     let movingCard: Card | undefined;
     if (sourceListId === targetListId) {
-      newTargetCards = arrayMove(targetCards, activeLoc.index, targetIndex);
-      movingCard = newTargetCards[targetIndex];
+      const reordered = arrayMove(targetCards, activeLoc.index, targetIndex);
+      movingCard = reordered[targetIndex];
+      setCardsByList((prev) => ({ ...prev, [targetListId]: reordered }));
     } else {
       const card = sourceCards[activeLoc.index];
       movingCard = { ...card, list: targetListId };
@@ -293,7 +333,13 @@ const BoardList: React.FC = () => {
 
     if (!movingCard) return;
 
-    const newPosition = targetIndex;
+    const currentListCards = targetListId === sourceListId ? (cardsByList[targetListId] ?? []) : (cardsByList[targetListId] ?? []);
+    const reordered = [...(targetListId === sourceListId ? (cardsByList[targetListId] ?? []) : (cardsByList[targetListId] ?? []))];
+    // ensure includes moving card in the sequence for position calc
+    const sequence = (cardsByList[targetListId] ?? []).filter((c) => c._id !== movingCard._id);
+    sequence.splice(targetIndex, 0, { ...movingCard });
+    const newPosition = computePosition(sequence, targetIndex);
+
     try {
       const updated = await updateCard(selectedBoard._id, sourceListId, activeId, {
         list: targetListId,
@@ -304,113 +350,109 @@ const BoardList: React.FC = () => {
         [sourceListId]: prev[sourceListId]?.filter((c) => c._id !== activeId) ?? [],
         [targetListId]: (prev[targetListId] ?? []).map((c) => (c._id === activeId ? updated : c)),
       }));
+      toast.success('Spell moved');
     } catch (e) {
       setError(getErrorMessage(e));
-      // on failure, reload lists/cards to resync
+      setLists(prevState.lists);
+      setCardsByList(prevState.cardsByList);
       if (selectedBoard) void loadListsAndCards(selectedBoard._id);
     }
   };
 
   return (
-    <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
-      <div>
-        <h3>Boards</h3>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 text-[color:var(--text)]">
+      <div className="card-surface p-4 lg:col-span-1">
+        <h3 className="font-display text-xl text-primary">Grimoire Pages</h3>
         <ErrorBanner message={error} />
-        <ul>
+        <ul className="space-y-2 mt-3">
           {boards.map((b) => (
-            <li key={b._id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button onClick={() => setSelectedBoard(b)}>{b.title}</button>
+            <li key={b._id} className={clsx("flex items-center justify-between px-3 py-2 rounded-lg border border-primary/20", selectedBoard?._id === b._id && "bg-primary/10")}>
+              <button className="text-left flex-1" onClick={() => setSelectedBoard(b)}>
+                {b.title}
+              </button>
               <button onClick={() => handleDeleteBoard(b._id)} aria-label={`Delete ${b.title}`}>🗑️</button>
             </li>
           ))}
         </ul>
-        <form onSubmit={handleCreateBoard} style={{ marginTop: '1rem' }}>
+        <form onSubmit={handleCreateBoard} className="mt-4 space-y-2">
           <input
+            className="w-full rounded-lg bg-surface border border-primary/30 px-3 py-2"
             placeholder="Board title"
             value={boardTitle}
             onChange={(e) => setBoardTitle(e.target.value)}
             required
-            style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem' }}
           />
           <textarea
+            className="w-full rounded-lg bg-surface border border-primary/30 px-3 py-2"
             placeholder="Description (optional)"
             value={boardDesc}
             onChange={(e) => setBoardDesc(e.target.value)}
-            style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem' }}
           />
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={loading} className="glow-button w-full">
             Create board
           </button>
         </form>
       </div>
-      <div>
-        <h3>{selectedBoard ? `Spell Schools for ${selectedBoard.title}` : 'Select a board'}</h3>
+      <div className="lg:col-span-2 card-surface p-4">
+        <h3 className="font-display text-xl text-primary">
+          {selectedBoard ? `Spell Schools for ${selectedBoard.title}` : 'Select a board'}
+        </h3>
         {selectedBoard ? (
           <DndContext
             sensors={sensors}
             onDragStart={({ active }) => setActiveCardId(String(active.id))}
-            onDragEnd={handleDragEnd}
+            onDragEnd={(e) => {
+              // detect if list drag (data type list) or card drag
+              if (e.active?.data?.current?.type === 'list') {
+                handleListDragEnd(e);
+              } else {
+                handleDragEnd(e);
+              }
+            }}
           >
-            <form onSubmit={handleCreateList} style={{ marginBottom: '1rem' }}>
+            <form onSubmit={handleCreateList} className="mt-3 flex gap-2">
               <input
+                className="flex-1 rounded-lg bg-surface border border-primary/30 px-3 py-2"
                 placeholder="New Spell School title"
                 value={listTitle}
                 onChange={(e) => setListTitle(e.target.value)}
                 required
-                style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem' }}
               />
-              <button type="submit" disabled={loading}>
-                Add spell school
+              <button type="submit" disabled={loading} className="glow-button">
+                Add school
               </button>
             </form>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              {lists.map((list) => (
-                <div key={list._id} style={{ border: '1px solid #ddd', padding: '0.75rem', borderRadius: 8 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong>{list.title}</strong>
-                    <button onClick={() => handleDeleteList(list._id)}>🗑️</button>
-                  </div>
-                  <form onSubmit={(e) => handleCreateCard(e, list._id)} style={{ marginTop: '0.5rem' }}>
-                    <input
-                      placeholder="Spell title"
-                      value={cardTitle}
-                      onChange={(e) => setCardTitle(e.target.value)}
-                      required
-                      style={{ width: '100%', marginBottom: '0.25rem', padding: '0.5rem' }}
-                    />
-                    <textarea
-                      placeholder="Description (optional)"
-                      value={cardDesc}
-                      onChange={(e) => setCardDesc(e.target.value)}
-                      style={{ width: '100%', marginBottom: '0.25rem', padding: '0.5rem' }}
-                    />
-                    <button type="submit" disabled={loading}>
-                      Add spell
-                    </button>
-                  </form>
-                  <SortableContext items={(cardsByList[list._id] ?? []).map((c) => c._id)} strategy={rectSortingStrategy}>
-                    <ul>
-                      {(cardsByList[list._id] ?? []).map((c) => (
-                        <SortableCard
-                          key={c._id}
-                          card={c}
-                          onDelete={() => handleDeleteCard(list._id, c._id)}
-                          onStatusChange={(status) => handleUpdateCardStatus(list._id, c._id, status)}
-                        />
-                      ))}
-                    </ul>
-                  </SortableContext>
-                </div>
-              ))}
-            </div>
+
+            <SortableContext items={lists.map((l) => l._id)} strategy={rectSortingStrategy}>
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
+                {lists.map((list) => (
+                  <SortableListColumn
+                    key={list._id}
+                    list={list}
+                    sensors={sensors}
+                    onDelete={() => handleDeleteList(list._id)}
+                    onCreateCard={(e) => handleCreateCard(e, list._id)}
+                    cardTitle={cardTitle}
+                    setCardTitle={setCardTitle}
+                    cardDesc={cardDesc}
+                    setCardDesc={setCardDesc}
+                    cards={cardsByList[list._id] ?? []}
+                    onDeleteCard={(cardId) => handleDeleteCard(list._id, cardId)}
+                    onStatusChange={(cardId, status) => handleUpdateCardStatus(list._id, cardId, status)}
+                    setActiveCardId={setActiveCardId}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+
             <DragOverlay>
               {activeCardId
                 ? (() => {
                     const card = cardsFlat.find((c) => c._id === activeCardId);
                     return card ? (
-                      <div style={{ padding: '0.5rem', border: '1px solid #eee', background: '#fff', width: 220 }}>
+                      <div className="card-surface px-3 py-2 w-56">
                         <strong>{card.title}</strong>
-                        <p style={{ margin: 0 }}>{card.description}</p>
+                        <p className="m-0 text-sm opacity-80">{card.description}</p>
                       </div>
                     ) : null;
                   })()
@@ -418,7 +460,7 @@ const BoardList: React.FC = () => {
             </DragOverlay>
           </DndContext>
         ) : (
-          <p>Select or create a board to manage spell schools and spells.</p>
+          <p className="mt-3 text-sm opacity-80">Select or create a board to manage spell schools and spells.</p>
         )}
       </div>
     </div>
@@ -426,3 +468,76 @@ const BoardList: React.FC = () => {
 };
 
 export default BoardList;
+
+function SortableListColumn({
+  list,
+  cards,
+  onDelete,
+  onCreateCard,
+  cardTitle,
+  setCardTitle,
+  cardDesc,
+  setCardDesc,
+  onDeleteCard,
+  onStatusChange,
+}: {
+  list: List;
+  cards: Card[];
+  onDelete: () => void;
+  onCreateCard: (e: React.FormEvent) => void;
+  cardTitle: string;
+  setCardTitle: (v: string) => void;
+  cardDesc: string;
+  setCardDesc: (v: string) => void;
+  onDeleteCard: (id: string) => void;
+  onStatusChange: (id: string, status: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: list._id,
+    data: { type: 'list' },
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="bg-surface/70 border border-primary/20 rounded-xl p-3 shadow-lg">
+      <div className="flex justify-between items-center">
+        <strong className="font-display text-primary">{list.title}</strong>
+        <button onClick={onDelete}>🗑️</button>
+      </div>
+      <form onSubmit={onCreateCard} className="mt-2 space-y-2">
+        <input
+          className="w-full rounded-lg bg-surface border border-primary/30 px-3 py-2 text-sm"
+          placeholder="Spell title"
+          value={cardTitle}
+          onChange={(e) => setCardTitle(e.target.value)}
+          required
+        />
+        <textarea
+          className="w-full rounded-lg bg-surface border border-primary/30 px-3 py-2 text-sm"
+          placeholder="Description (optional)"
+          value={cardDesc}
+          onChange={(e) => setCardDesc(e.target.value)}
+        />
+        <button type="submit" className="glow-button w-full">
+          Add spell
+        </button>
+      </form>
+      <SortableContext items={cards.map((c) => c._id)} strategy={rectSortingStrategy}>
+        <ul className="mt-3 space-y-2">
+          {cards.map((c) => (
+            <SortableCard
+              key={c._id}
+              card={c}
+              onDelete={() => onDeleteCard(c._id)}
+              onStatusChange={(status) => onStatusChange(c._id, status)}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </div>
+  );
+}
