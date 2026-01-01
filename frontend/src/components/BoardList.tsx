@@ -47,31 +47,39 @@ function SortableCard({
   onDelete: () => void;
   onStatusChange: (status: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: card._id, data: { listId: card.list } });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: card._id,
+    data: { listId: card.list },
+  });
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
-    border: '1px solid #eee',
-    padding: '0.5rem',
-    marginBottom: '0.5rem',
-    background: '#fff',
   };
 
   return (
-    <li ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <strong>{card.title}</strong>
+    <li
+      ref={setNodeRef}
+      style={style}
+      className="card-surface bg-surface/80 border border-primary/20 px-3 py-2"
+      {...attributes}
+      {...listeners}
+    >
+      <div className="flex justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="cursor-grab text-primary" aria-label="Drag handle">⋮⋮</span>
+          <strong>{card.title}</strong>
+        </div>
         <button onClick={onDelete}>🗑️</button>
       </div>
-      <p>{card.description}</p>
-      <div>
+      <p className="text-sm opacity-80 mb-1">{card.description}</p>
+      <div className="flex items-center gap-1 text-xs">
         Status:
         {['todo', 'doing', 'done'].map((status) => (
           <button
             key={status}
             onClick={() => onStatusChange(status)}
             disabled={card.status === status}
-            style={{ marginLeft: '0.25rem' }}
+            className="px-2 py-1 rounded bg-surface border border-primary/20"
           >
             {status}
           </button>
@@ -150,6 +158,7 @@ const BoardList: React.FC = () => {
   const handleCreateBoard = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setLoadingAction(true);
       const board = await createBoard(boardTitle, boardDesc);
       setBoards((prev) => [...prev, board]);
       setBoardTitle('');
@@ -159,6 +168,8 @@ const BoardList: React.FC = () => {
     } catch (e) {
       setError(getErrorMessage(e));
       toast.error(getErrorMessage(e));
+    } finally {
+      setLoadingAction(false);
     }
   };
 
@@ -179,6 +190,7 @@ const BoardList: React.FC = () => {
     e.preventDefault();
     if (!selectedBoard) return;
     try {
+      setLoadingAction(true);
       const list = await createList(selectedBoard._id, listTitle);
       setLists((prev) => sortLists([...prev, list]));
       setCardsByList((prev) => ({ ...prev, [list._id]: [] }));
@@ -187,11 +199,14 @@ const BoardList: React.FC = () => {
     } catch (e) {
       setError(getErrorMessage(e));
       toast.error(getErrorMessage(e));
+    } finally {
+      setLoadingAction(false);
     }
   };
 
   const handleDeleteBoard = async (id: string) => {
     try {
+      setLoadingAction(true);
       await deleteBoard(id);
       setBoards((prev) => prev.filter((b) => b._id !== id));
       if (selectedBoard?._id === id) {
@@ -203,12 +218,15 @@ const BoardList: React.FC = () => {
     } catch (e) {
       setError(getErrorMessage(e));
       toast.error(getErrorMessage(e));
+    } finally {
+      setLoadingAction(false);
     }
   };
 
   const handleDeleteList = async (listId: string) => {
     if (!selectedBoard) return;
     try {
+      setLoadingAction(true);
       await deleteList(selectedBoard._id, listId);
       setLists((prev) => prev.filter((l) => l._id !== listId));
       setCardsByList((prev) => {
@@ -220,12 +238,15 @@ const BoardList: React.FC = () => {
     } catch (e) {
       setError(getErrorMessage(e));
       toast.error(getErrorMessage(e));
+    } finally {
+      setLoadingAction(false);
     }
   };
 
   const handleDeleteCard = async (listId: string, id: string) => {
     if (!selectedBoard) return;
     try {
+      setLoadingAction(true);
       await deleteCard(selectedBoard._id, listId, id);
       setCardsByList((prev) => ({
         ...prev,
@@ -235,6 +256,8 @@ const BoardList: React.FC = () => {
     } catch (e) {
       setError(getErrorMessage(e));
       toast.error(getErrorMessage(e));
+    } finally {
+      setLoadingAction(false);
     }
   };
 
@@ -264,11 +287,12 @@ const BoardList: React.FC = () => {
   const computePosition = (items: { position: number }[], targetIndex: number) => {
     const prev = items[targetIndex - 1]?.position;
     const next = items[targetIndex + 1]?.position;
-    if (prev === undefined && next === undefined) return 1024;
-    if (prev === undefined) return next! / 2;
-    if (next === undefined) return prev + 1024;
+    const GAP = 1024;
+    if (prev === undefined && next === undefined) return GAP;
+    if (prev === undefined) return next! - GAP / 2;
+    if (next === undefined) return prev + GAP;
     const mid = (prev + next) / 2;
-    if (mid === prev || mid === next) return prev + 1024;
+    if (!Number.isFinite(mid) || mid === prev || mid === next) return prev + GAP;
     return mid;
   };
 
@@ -346,9 +370,6 @@ const BoardList: React.FC = () => {
 
     if (!movingCard) return;
 
-    const currentListCards = targetListId === sourceListId ? (cardsByList[targetListId] ?? []) : (cardsByList[targetListId] ?? []);
-    const reordered = [...(targetListId === sourceListId ? (cardsByList[targetListId] ?? []) : (cardsByList[targetListId] ?? []))];
-    // ensure includes moving card in the sequence for position calc
     const sequence = (cardsByList[targetListId] ?? []).filter((c) => c._id !== movingCard._id);
     sequence.splice(targetIndex, 0, { ...movingCard });
     const newPosition = computePosition(sequence, targetIndex);
@@ -401,7 +422,7 @@ const BoardList: React.FC = () => {
             value={boardDesc}
             onChange={(e) => setBoardDesc(e.target.value)}
           />
-          <button type="submit" disabled={loading} className="glow-button w-full">
+          <button type="submit" disabled={loadingAction} className="glow-button w-full">
             Create board
           </button>
         </form>
@@ -431,7 +452,7 @@ const BoardList: React.FC = () => {
                 onChange={(e) => setListTitle(e.target.value)}
                 required
               />
-              <button type="submit" disabled={loading} className="glow-button">
+              <button type="submit" disabled={loadingAction} className="glow-button">
                 Add school
               </button>
             </form>
@@ -554,3 +575,4 @@ function SortableListColumn({
     </div>
   );
 }
+  const [loadingAction, setLoadingAction] = useState(false);
