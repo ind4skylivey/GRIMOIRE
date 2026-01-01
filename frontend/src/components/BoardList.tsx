@@ -153,8 +153,10 @@ const BoardList: React.FC = () => {
       setBoardTitle('');
       setBoardDesc('');
       setSelectedBoard(board);
+      toast.success('Board created');
     } catch (e) {
       setError(getErrorMessage(e));
+      toast.error(getErrorMessage(e));
     }
   };
 
@@ -179,8 +181,10 @@ const BoardList: React.FC = () => {
       setLists((prev) => [...prev, list]);
       setCardsByList((prev) => ({ ...prev, [list._id]: [] }));
       setListTitle('');
+      toast.success('Spell school added');
     } catch (e) {
       setError(getErrorMessage(e));
+      toast.error(getErrorMessage(e));
     }
   };
 
@@ -193,8 +197,10 @@ const BoardList: React.FC = () => {
         setLists([]);
         setCardsByList({});
       }
+      toast.success('Board deleted');
     } catch (e) {
       setError(getErrorMessage(e));
+      toast.error(getErrorMessage(e));
     }
   };
 
@@ -208,8 +214,10 @@ const BoardList: React.FC = () => {
         delete copy[listId];
         return copy;
       });
+      toast.success('Spell school deleted');
     } catch (e) {
       setError(getErrorMessage(e));
+      toast.error(getErrorMessage(e));
     }
   };
 
@@ -221,8 +229,10 @@ const BoardList: React.FC = () => {
         ...prev,
         [listId]: (prev[listId] ?? []).filter((c) => c._id !== id),
       }));
+      toast.success('Spell banished');
     } catch (e) {
       setError(getErrorMessage(e));
+      toast.error(getErrorMessage(e));
     }
   };
 

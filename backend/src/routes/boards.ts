@@ -6,6 +6,8 @@ import { List } from '../models/List';
 import { Card } from '../models/Card';
 import { notFound, unauthorized } from '../utils/errors';
 import { validateBody } from '../middleware/validate';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 const router = Router();
 
@@ -60,6 +62,15 @@ const cardUpdateSchema = cardSchema
   .partial();
 
 router.use(authGuard);
+router.use(helmet());
+router.use(
+  rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+);
 
 // Boards
 router.get('/', async (req, res) => {
